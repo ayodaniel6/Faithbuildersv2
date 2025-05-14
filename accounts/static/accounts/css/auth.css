@@ -1,0 +1,21 @@
+.flip-container {
+    perspective: 1000px;
+  }
+  .flipper {
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    position: relative;
+  }
+  .flip-container.flipped .flipper {
+    transform: rotateY(180deg);
+  }
+  .flip-face {
+    backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  .flip-back {
+    transform: rotateY(180deg);
+  }

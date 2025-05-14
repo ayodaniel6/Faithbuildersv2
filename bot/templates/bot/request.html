@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
+        <div>
+            <h2 class="text-center text-2xl font-bold text-purple-900">
+                Request a Counsellor
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Fill out the form and we'll connect you with someone who can help.
+            </p>
+        </div>
+
+        <form class="mt-8 space-y-6" method="post">
+            {% csrf_token %}
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium text-purple-700">Name</label>
+                    <input id="name" name="name" type="text" required
+                        class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Jane Doe">
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-purple-700">Email address</label>
+                    <input id="email" name="email" type="email" required
+                        class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="you@example.com">
+                </div>
+
+                <div class="mb-4">
+                    <label for="message" class="block text-sm font-medium text-purple-700">Your Message</label>
+                    <textarea id="message" name="message" rows="4" required
+                        class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Tell us what's on your mind..."></textarea>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    Request Counsellor
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

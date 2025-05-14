@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-purple-100 via-white to-purple-50 py-10 px-6">
+  <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 relative">
+    
+    <!-- Profile Header -->
+    <div class="flex items-center gap-4 mb-6">
+      {% if request.user.profile.avatar %}
+        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-purple-300 shadow-md">
+      {% else %}
+        <img src="{% static 'accounts/images/default.png' %}" alt="Default Avatar" class="w-24 h-24 rounded-full border-4 border-purple-300 shadow-md">
+      {% endif %}
+      <div>
+        <h2 class="text-2xl font-bold text-purple-800">Welcome, {{ user.first_name|default:user.username }}</h2>
+        <p class="text-gray-600">{{ user.email }}</p>
+        {% if user.first_name %}
+          <p class="text-gray-600">First Name: {{ user.first_name }}</p>
+        {% endif %}
+        <div class="mt-2 flex gap-4">
+          <a href="{% url 'accounts:change_password' %}" class="text-sm text-purple-600 hover:underline">Change Password</a>
+          <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:underline">Logout</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div class="bg-purple-50 p-4 rounded-xl shadow-inner mb-8">
+      <h3 class="text-lg font-semibold text-purple-700 mb-2">Edit Profile</h3>
+      <form method="POST" enctype="multipart/form-data" class="grid gap-4">
+        {% csrf_token %}
+        {{ u_form.as_p }}
+        {{ p_form.as_p }}
+        <button type="submit" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
+          Save Changes
+        </button>
+      </form>
+    </div>
+
+    <!-- Liked Posts -->
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold text-purple-800 mb-2">❤️ Liked Posts</h2>
+      {% if liked_posts %}
+        <ul class="list-disc pl-5 text-gray-700">
+          {% for post in liked_posts %}
+            <li><a href="{{ post.get_absolute_url }}" class="text-purple-600 hover:underline">{{ post.title }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-gray-500">You haven't liked any posts yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Bookmarked Posts -->
+    <div>
+      <h2 class="text-xl font-semibold text-purple-800 mb-2">🔖 Bookmarked Posts</h2>
+      {% if bookmarked_posts %}
+        <ul class="list-disc pl-5 text-gray-700">
+          {% for post in bookmarked_posts %}
+            <li><a href="{{ post.get_absolute_url }}" class="text-purple-600 hover:underline">{{ post.title }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-gray-500">No bookmarks yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

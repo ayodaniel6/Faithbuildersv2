@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'accounts/js/auth.js' %}" defer></script>
+<link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+
+<div class="min-h-screen bg-gradient-to-br from-purple-100 via-purple-50 to-white flex items-center justify-center py-12 px-4">
+
+  <div id="flip-card" class="flip-container w-full max-w-md">
+    <div class="flipper">
+
+      <!-- Front: Login -->
+      <div class="flip-face bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 space-y-4">
+        <h2 class="text-2xl font-bold text-center text-purple-700">Welcome Back</h2>
+        <form method="POST" class="space-y-4">
+          {% csrf_token %}
+          {{ login_form.as_p }}
+          <button type="submit" name="login" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition">
+            Login
+          </button>
+        </form>
+        <p class="text-sm text-center text-gray-600 dark:text-gray-300">
+          Don't have an account?
+          <a href="#" onclick="flipCard(true)" class="text-purple-600 hover:underline">Sign up</a>
+        </p>
+      </div>
+
+      <!-- Back: Signup -->
+      <div class="flip-face flip-back bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 space-y-4">
+        <h2 class="text-2xl font-bold text-center text-purple-700">Create Account</h2>
+        <form method="POST" class="space-y-4">
+          {% csrf_token %}
+          {{ signup_form.as_p }}
+          <button type="submit" name="signup" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition">
+            Sign Up
+          </button>
+        </form>
+        <p class="text-sm text-center text-gray-600 dark:text-gray-300">
+          Already have an account?
+          <a href="#" onclick="flipCard(false)" class="text-purple-600 hover:underline">Login</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+

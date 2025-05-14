@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+
+<div class="min-h-screen bg-gray-100 py-8 px-4 flex items-center justify-center">
+    <div class="max-w-5xl w-full bg-white p-6 rounded-2xl shadow-xl">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-semibold text-gray-800">🧑‍💼 Counsellor Requests</h1>
+            <div class="relative">
+                <a  href="{% static 'bot:request' %}" class="bg-purple-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none transition duration-300">New Request</a>
+            </div>
+        </div>
+
+        {% if requests %}
+        <div class="overflow-hidden shadow-md rounded-lg">
+            <table class="min-w-full table-auto">
+                <thead class="bg-purple-600 text-white">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium">Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium">Email</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium">Message</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for req in requests %}
+                    <tr class="hover:bg-purple-50 cursor-pointer transition duration-300">
+                        <td class="px-4 py-4 text-sm text-gray-900">{{ req.name }}</td>
+                        <td class="px-4 py-4 text-sm text-purple-600">{{ req.email }}</td>
+                        <td class="px-4 py-4 text-sm text-gray-700">{{ req.message|truncatewords:10 }}</td>
+                        <td class="px-4 py-4 text-sm text-gray-500">{{ req.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-600">No counsellor requests found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
