@@ -1,6 +1,6 @@
 from django import forms
 from .models import Comment, Post
-from tinymce.widgets import TinyMCE  # Import TinyMCE widge
+from ckeditor.widgets import CKEditorWidget
 
 class CommentForm(forms.ModelForm):
     class Meta:
@@ -19,8 +19,9 @@ class CommentForm(forms.ModelForm):
 
 
 class PostForm(forms.ModelForm):
-    content = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))  # Apply TinyMCE to the content field
-    
+    content = forms.CharField(widget=CKEditorWidget())
+
     class Meta:
         model = Post
-        fields = ['title', 'content', 'image', 'file', 'audio', 'tags', 'is_draft']
+        fields = ['title', 'content', 'image', 'file', 'audio', 'tags', 'is_draft', 'video_url']
+

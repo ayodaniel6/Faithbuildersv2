@@ -33,6 +33,7 @@ class Post(models.Model):
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     bookmarks = models.ManyToManyField(User, related_name='bookmarked_posts', blank=True)
     slug = models.SlugField(unique=True, blank=True)
+    video_url = models.URLField(blank=True, null=True, help_text="YouTube or external video link")
 
     def __str__(self):
         return self.title

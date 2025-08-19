@@ -1,13 +1,14 @@
 from django import forms
 from blog.models import Post
-from tinymce.widgets import TinyMCE
+from ckeditor.widgets import CKEditorWidget
+
 
 class PostForm(forms.ModelForm):
-    content = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30, 'class': 'tinymce-editor'}))
+    content = forms.CharField(widget=CKEditorWidget())
 
     class Meta:
         model = Post
-        fields = ['title', 'content', 'image', 'file', 'audio', 'tags', 'is_draft']
+        fields = ['title', 'content', 'image', 'file', 'audio', 'tags', 'is_draft', 'video_url']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'border border-gray-300 p-4 rounded-md w-full text-2xl font-semibold',  # Larger text and padding
