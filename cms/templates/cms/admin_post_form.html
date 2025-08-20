@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}
-
 <div class="container mx-auto p-6 bg-gray-50 rounded-xl shadow-lg mt-8">
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
@@ -23,6 +22,7 @@
       {{ form.title }}
     </div>
 
+    <!-- Content (Rich Text Editor) -->
     <div class="form-group">
       <label for="id_content" class="text-gray-700 font-medium">Post Content</label>
       {{ form.content }}
@@ -41,6 +41,11 @@
       <div>
         <label for="id_audio" class="block text-gray-700 font-medium">Upload Audio</label>
         {{ form.audio }}
+      </div>
+      <div>
+        <label for="id_video_url" class="block text-gray-700 font-medium">Video URL</label>
+        {{ form.video_url }}
+        <p class="text-sm text-gray-500">Paste a YouTube or external video link to embed.</p>
       </div>
     </div>
 
@@ -62,5 +67,4 @@
     </button>
   </form>
 </div>
-
 {% endblock %}

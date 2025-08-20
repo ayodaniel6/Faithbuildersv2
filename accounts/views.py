@@ -72,7 +72,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             p_form.save()
             return redirect('accounts:dashboard')
 
-        # fallback with errors and re-populating all context
         context = self.get_context_data()
         context['u_form'] = u_form
         context['p_form'] = p_form
