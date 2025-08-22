@@ -8,7 +8,8 @@ from .forms import CommentForm
 from django.views.decorators.http import require_POST
 from django.views import View
 from django.db.models import Q
-
+from django.utils import timezone
+from datetime import timedelta
 
 @cache_page(60 * 15)
 def post_list(request):
@@ -16,8 +17,11 @@ def post_list(request):
     paginator = Paginator(post_list, 10)  # Show 10 posts per page
     page = request.GET.get('page')
     posts = paginator.get_page(page)
-    return render(request, 'blog/post_list.html', {'posts': posts})
 
+    return render(request, 'blog/post_list.html', {
+        'posts': posts,
+        'animate': True
+    })
 
 
 def post_detail(request, slug):

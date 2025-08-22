@@ -1,10 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
-# writing blog content with formatting
-from tinymce.models import HTMLField
+from django.conf import settings
+
 # All posts to be tagged with keywords
 from taggit.managers import TaggableManager
 from django.utils.text import slugify
+from datetime import timedelta
+from django.utils import timezone
 
 
 def extract_keywords(text, num_keywords=5):
@@ -22,16 +23,16 @@ def extract_keywords(text, num_keywords=5):
 
 class Post(models.Model):
     title = models.CharField(max_length=200)
-    content = HTMLField()
+    content = models.TextField()
     image = models.ImageField(upload_to='blog/images/', blank=True, null=True)
     file = models.FileField(upload_to='blog/files/', blank=True, null=True)
     audio = models.FileField(upload_to='blog/files/', blank=True, null=True)
     is_draft = models.BooleanField(default=True)
     date_published = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tags = TaggableManager()
-    likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
-    bookmarks = models.ManyToManyField(User, related_name='bookmarked_posts', blank=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_posts', blank=True)
+    bookmarks = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='bookmarked_posts', blank=True)
     slug = models.SlugField(unique=True, blank=True)
     video_url = models.URLField(blank=True, null=True, help_text="YouTube or external video link")
 
@@ -60,9 +61,13 @@ class Post(models.Model):
         from django.urls import reverse
         return reverse('blog:post_detail', kwargs={'slug': self.slug})
 
+    @property
+    def is_new(self):
+        return self.date_published >= timezone.now() - timedelta(hours=24)
+
 
 class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, related_name='like', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -72,7 +77,7 @@ class Like(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -81,7 +86,7 @@ class Comment(models.Model):
 
 
 class Bookmark(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookmarks')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='bookmarked_by')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -90,7 +95,7 @@ class Bookmark(models.Model):
 
 
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)

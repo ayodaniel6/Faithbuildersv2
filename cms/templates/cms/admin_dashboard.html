@@ -1,69 +1,110 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="container mx-auto p-6">
-        <!-- Dashboard Title -->
-        <div class="mb-6">
-            <h2 class="text-3xl font-semibold text-gray-800">CMS Dashboard</h2>
-            <p class="text-lg text-gray-500">Manage your website content and moderation with ease</p>
+<div class="min-h-screen bg-gray-50 py-10 px-6">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Admin Header -->
+        <div class="mb-12 text-center">
+            <h1 class="text-4xl font-bold text-gray-800">Admin Dashboard</h1>
+            <p class="text-lg text-gray-500 mt-2">
+                Manage content, comments, and counselling requests efficiently
+            </p>
         </div>
 
-        <!-- Main CMS Dashboard Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
             <!-- Manage Posts Card -->
-            <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center hover:shadow-2xl transition duration-300">
-                <div class="mb-4">
+            <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                <!-- Icon -->
+                <div class="mb-4 flex justify-center">
                     <svg class="h-16 w-16 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4v16l15-8-15-8z"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-800 mb-2">Manage Posts</h3>
-                <p class="text-gray-600 mb-4">Create, edit, or delete blog posts easily</p>
-                <a href="{% url 'cms:admin_post_list' %}" class="bg-blue-600 text-white px-6 py-2 rounded-full text-lg hover:bg-blue-700 transition duration-300">Go to Posts</a>
+
+                <!-- Heading -->
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">Manage Posts</h2>
+
+                <!-- Description -->
+                <p class="text-gray-600 mb-6 text-center">
+                    Create, edit, and moderate blog posts with full control
+                </p>
+
+                <!-- Button -->
+                <a href="{% url 'cms:admin_post_list' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition w-full">
+                    Go to Posts
+                </a>
             </div>
 
-            <!-- Moderate Comments Card -->
-            <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center hover:shadow-2xl transition duration-300">
-                <div class="mb-4">
-                    <svg class="h-16 w-16 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+             <!-- Moderate Comments Card -->
+
+             <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                <!-- Icon -->
+                <div class="mb-4 flex justify-center">
+                     <svg class="h-16 w-16 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h1.5M9 12h1.5M9 14h1.5M3 12a9 9 0 1118 0A9 9 0 013 12z"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-800 mb-2">Moderate Comments</h3>
-                <p class="text-gray-600 mb-4">Review, approve, or delete comments on posts</p>
-                <a href="{% url 'cms:admin_comment_list' %}" class="bg-yellow-500 text-white px-6 py-2 rounded-full text-lg hover:bg-yellow-600 transition duration-300">Manage Comments</a>
+
+                <!-- Heading -->
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">Moderate Comments</h2>
+
+                <!-- Description -->
+                <p class="text-gray-600 mb-6 text-center">
+                    Review and approve or delete user comments
+                </p>
+
+                <!-- Button -->
+                <a href="{% url 'cms:admin_comment_list' %}" class="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition w-full">
+                    Manage Comments
+                </a>
             </div>
 
-            <!-- Seek Counsellor Card (Spanning Full Row) -->
-            <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center hover:shadow-2xl transition duration-300 col-span-1 md:col-span-2 lg:col-span-3">
-                <div class="mb-4">
+            <!-- Counsellor Requests Card -->
+
+            <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                <!-- Icon -->
+                <div class="mb-4 flex justify-center">
                     <svg class="h-16 w-16 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 4h4v4m0 0h-4m4 0l-4-4m4 4l-4 4M4 12h4m0 0h4m-4 0h4m-4 0l-4 4m0 0h4M4 12l4-4"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-semibold text-gray-800 mb-2">Seek Counsellor</h3>
-                <p class="text-gray-600 mb-4">View and manage counseling requests</p>
-                <a href="{% url 'cms:manage_requests' %}" class="bg-green-500 text-white px-6 py-2 rounded-full text-lg hover:bg-green-600 transition duration-300">View Requests</a>
+
+                <!-- Heading -->
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">Counsellor Requests</h2>
+
+                <!-- Description -->
+                <p class="text-gray-600 mb-6 text-center">
+                    Monitor and manage counselling requests
+                </p>
+
+                <!-- Button -->
+                <a href="{% url 'cms:manage_requests' %}" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition w-full">
+                    View Requests
+                </a>
             </div>
 
         </div>
 
-        <!-- Additional Links Section -->
-        <div class="mt-12 bg-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4">Quick Links</h3>
-            <ul class="space-y-4">
-                <li>
-                    <a href="{% url 'cms:admin_post_list' %}" class="text-blue-600 hover:underline">Manage Posts</a>
-                </li>
-                <li>
-                    <a href="{% url 'cms:admin_comment_list' %}" class="text-yellow-600 hover:underline">Moderate Comments</a>
-                </li>
-                <li>
-                    <a href="{% url 'cms:manage_requests' %}" class="text-green-600 hover:underline">Seek Counsellor</a>
-                </li>
-            </ul>
+        <!-- Quick Links Section -->
+        <div class="mt-16 bg-white rounded-2xl shadow-lg p-8">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-6">Quick Links</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="{% url 'cms:admin_post_list' %}" class="block bg-blue-50 text-blue-600 p-4 rounded-xl font-medium text-center hover:bg-blue-100 transition">
+                    Manage Posts
+                </a>
+                <a href="{% url 'cms:admin_comment_list' %}" class="block bg-yellow-50 text-yellow-600 p-4 rounded-xl font-medium text-center hover:bg-yellow-100 transition">
+                    Moderate Comments
+                </a>
+                <a href="{% url 'cms:manage_requests' %}" class="block bg-green-50 text-green-600 p-4 rounded-xl font-medium text-center hover:bg-green-100 transition">
+                    Counsellor Requests
+                </a>
+            </div>
         </div>
 
     </div>
+</div>
 {% endblock %}

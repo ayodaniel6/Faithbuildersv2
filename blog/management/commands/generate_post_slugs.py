@@ -3,25 +3,38 @@ from django.utils.text import slugify
 from blog.models import Post
 
 class Command(BaseCommand):
-    help = 'Generate unique slugs for blog posts without a slug'
+    help = "Generate unique slugs for blog posts without a slug"
+
+    def generate_unique_slug(self, title, existing_slugs):
+        """Generate a unique slug for a post title."""
+        base_slug = slugify(title)
+        slug = base_slug
+        num = 1
+
+        # Ensure uniqueness
+        while slug in existing_slugs:
+            slug = f"{base_slug}-{num}"
+            num += 1
+
+        existing_slugs.add(slug)  # Mark as used
+        return slug
 
     def handle(self, *args, **kwargs):
-        count = 0
-        for post in Post.objects.filter(slug__isnull=True).order_by('id'):
-            base_slug = slugify(post.title)
-            slug = base_slug
-            num = 1
-
-            while Post.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{num}"
-                num += 1
-
-            post.slug = slug
-            post.save()
-            count += 1
-            self.stdout.write(self.style.SUCCESS(f"Slug '{slug}' generated for post '{post.title}'"))
-
-        if count == 0:
+        posts = Post.objects.filter(slug__isnull=True).order_by("id")
+        if not posts.exists():
             self.stdout.write(self.style.WARNING("No posts needed slug generation."))
-        else:
-            self.stdout.write(self.style.SUCCESS(f"✅ Slugs generated for {count} post(s)."))
+            return
+
+        # Collect existing slugs to minimize queries
+        existing_slugs = set(Post.objects.values_list("slug", flat=True).exclude(slug__isnull=True))
+
+        updated_posts = []
+        for post in posts:
+            post.slug = self.generate_unique_slug(post.title, existing_slugs)
+            updated_posts.append(post)
+            self.stdout.write(self.style.SUCCESS(f"Slug '{post.slug}' generated for post '{post.title}'"))
+
+        # Bulk update instead of saving one by one
+        Post.objects.bulk_update(updated_posts, ["slug"])
+
+        self.stdout.write(self.style.SUCCESS(f"✅ Slugs generated for {len(updated_posts)} post(s)."))

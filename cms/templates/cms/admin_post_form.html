@@ -2,13 +2,16 @@
 {% load static %}
 
 {% block content %}
-<div class="container mx-auto p-6 bg-gray-50 rounded-xl shadow-lg mt-8">
+<div class="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg mt-8 transition-colors duration-300">
+  
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
-    <h2 class="text-3xl font-semibold text-gray-800">
+    <h2 class="text-3xl font-semibold text-gray-800 dark:text-gray-100">
       {{ is_create|yesno:"➕ Create Post,✏️ Edit Post" }}
     </h2>
-    <a href="{% url 'cms:admin_post_list' %}" class="text-sm text-purple-600 hover:underline">Back to Posts</a>
+    <a href="{% url 'cms:admin_post_list' %}" class="text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-400 text-sm font-medium transition duration-300">
+      Back to Posts
+    </a>
   </div>
 
   <!-- Form -->
@@ -18,51 +21,51 @@
     
     <!-- Title -->
     <div class="form-group">
-      <label for="id_title" class="text-gray-700 font-medium">Post Title</label>
+      <label for="id_title" class="text-gray-700 dark:text-gray-300 font-medium mb-1 block">Post Title</label>
       {{ form.title }}
     </div>
 
     <!-- Content (Rich Text Editor) -->
     <div class="form-group">
-      <label for="id_content" class="text-gray-700 font-medium">Post Content</label>
+      <label for="id_content" class="text-gray-700 dark:text-gray-300 font-medium mb-1 block">Post Content</label>
       {{ form.content }}
     </div>
 
     <!-- Media Uploads -->
-    <div class="form-group grid grid-cols-2 gap-4">
+    <div class="form-group grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label for="id_image" class="block text-gray-700 font-medium">Upload Image</label>
+        <label for="id_image" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Upload Image</label>
         {{ form.image }}
       </div>
       <div>
-        <label for="id_file" class="block text-gray-700 font-medium">Upload File</label>
+        <label for="id_file" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Upload File</label>
         {{ form.file }}
       </div>
       <div>
-        <label for="id_audio" class="block text-gray-700 font-medium">Upload Audio</label>
+        <label for="id_audio" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Upload Audio</label>
         {{ form.audio }}
       </div>
       <div>
-        <label for="id_video_url" class="block text-gray-700 font-medium">Video URL</label>
+        <label for="id_video_url" class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Video URL</label>
         {{ form.video_url }}
-        <p class="text-sm text-gray-500">Paste a YouTube or external video link to embed.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Paste a YouTube or external video link to embed.</p>
       </div>
     </div>
 
     <!-- Tags -->
     <div class="form-group">
-      <label for="id_tags" class="text-gray-700 font-medium">Tags</label>
+      <label for="id_tags" class="text-gray-700 dark:text-gray-300 font-medium mb-1 block">Tags</label>
       {{ form.tags }}
     </div>
 
     <!-- Draft Checkbox -->
-    <div class="form-group">
-      <label for="id_is_draft" class="text-gray-700 font-medium">Is this a Draft?</label>
+    <div class="form-group flex items-center space-x-2">
       {{ form.is_draft }}
+      <label for="id_is_draft" class="text-gray-700 dark:text-gray-300 font-medium">Mark as Draft</label>
     </div>
 
     <!-- Save Button -->
-    <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition duration-200">
+    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-6 py-3 rounded-md text-lg font-semibold transition duration-300">
       Save Post
     </button>
   </form>

@@ -1,71 +1,168 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<div class="min-h-screen bg-gradient-to-br from-purple-100 via-white to-purple-50 py-10 px-6">
-  <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 relative">
-    
+{% block content %}
+<script src="{% static 'js/dashboard.js' %}" defer></script>
+<div class="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-start">
+  <div class="w-full max-w-2xl bg-white rounded-2xl shadow-md p-6 space-y-8">
+
     <!-- Profile Header -->
-    <div class="flex items-center gap-4 mb-6">
-      {% if request.user.profile.avatar %}
-        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-purple-300 shadow-md">
-      {% else %}
-        <img src="{% static 'accounts/images/default.png' %}" alt="Default Avatar" class="w-24 h-24 rounded-full border-4 border-purple-300 shadow-md">
-      {% endif %}
+    <div class="flex items-center space-x-4">
+      <img id="avatar-img"
+           src="{% if user.avatar %}{{ user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user.first_name|default:user.username }}{% endif %}"
+           alt="Avatar"
+           class="w-20 h-20 rounded-full border-2 border-indigo-500 shadow-md transition-transform duration-300 hover:scale-105">
       <div>
-        <h2 class="text-2xl font-bold text-purple-800">Welcome, {{ user.first_name|default:user.username }}</h2>
-        {% if user.bio %}
-          <p class="text-gray-600">Bio: {{ user.bio }}</p>
-        {% endif %}
-        <p class="text-gray-600">{{ user.email }}</p>
-        <div class="mt-2 flex gap-4">
-          <a href="{% url 'accounts:change_password' %}" class="text-sm text-purple-600 hover:underline">Change Password</a>
-          <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:underline">Logout</a>
-        </div>
+        <h1 class="text-xl font-semibold text-gray-800">Welcome, <span id="user-first-name">{{ user.first_name|default:user.username }}</span> 👋</h1>
+        <p class="text-sm text-gray-500">Glad to have you back on <span class="font-medium text-indigo-500">Faithbuilders</span></p>
       </div>
     </div>
 
-    <!-- Edit Profile Form -->
-    <div class="bg-purple-50 p-4 rounded-xl shadow-inner mb-8">
-      <h3 class="text-lg font-semibold text-purple-700 mb-2">Edit Profile</h3>
-      <form method="POST" enctype="multipart/form-data" class="grid gap-4">
+    <!-- Profile Completeness -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <p class="text-sm text-gray-600 font-medium">Profile Completeness</p>
+        <span class="text-xs text-gray-500">{{ meter }}%</span>
+      </div>
+      <div class="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div class="absolute top-0 left-0 h-full bg-indigo-500 transition-all duration-500 ease-in-out rounded-full" style="width: {{ meter }}%;"></div>
+      </div>
+      {% if tips %}
+        <div class="mt-2 text-xs text-yellow-700 bg-yellow-100 p-3 rounded-md animate-pulse">
+          <p class="font-medium mb-1">Tips to complete your profile:</p>
+          <ul class="list-disc list-inside">
+            {% for tip in tips %}
+              <li>{{ tip }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="grid grid-cols-2 gap-3">
+      <button id="toggle-edit-btn" class="flex items-center justify-center bg-indigo-50 text-indigo-600 text-sm px-4 py-2 rounded-xl hover:bg-indigo-100 transition">
+        ✍️ Edit Profile
+      </button>
+      <form action="{% url 'accounts:logout' %}" method="post" class="w-full">
         {% csrf_token %}
-        {{ u_form.as_p }}
-        {{ p_form.as_p }}
-        <button type="submit" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
-          Save Changes
+        <button type="submit" class="flex items-center justify-center w-full bg-red-50 text-red-600 text-sm px-4 py-2 rounded-xl hover:bg-red-100 transition">
+          🔒 Logout
+        </button>
+      </form>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div id="edit-profile-form" class="hidden mt-4 border-t pt-4 space-y-4">
+      <form id="profileForm" enctype="multipart/form-data" data-update-url="{% url 'accounts:update_profile' %}">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">First Name</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Last Name</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring focus:border-indigo-500">
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-gray-600 mb-1">Bio</label>
+          <textarea name="bio" rows="3" class="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring focus:border-indigo-500">{{ user.bio }}</textarea>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-gray-600 mb-1">Avatar</label>
+          <input type="file" name="avatar" accept="image/*" class="w-full border px-3 py-2 rounded-lg text-sm">
+        </div>
+        <button type="submit" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm">
+          💾 Save Changes
         </button>
       </form>
     </div>
 
     <!-- Liked Posts -->
-    <div class="mb-6">
-      <h2 class="text-xl font-semibold text-purple-800 mb-2">❤️ Liked Posts</h2>
-      {% if liked_posts %}
-        <ul class="list-disc pl-5 text-gray-700">
+    <div x-data="{ open: false }" class="bg-white rounded-2xl shadow p-4 mb-4">
+      <div 
+        @click="open = !open" 
+        class="flex items-center justify-between cursor-pointer">
+        <h2 class="text-lg font-semibold">❤️ Liked Posts</h2>
+        <svg :class="{'rotate-180': open}" 
+            class="w-5 h-5 transform transition-transform duration-300" 
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      <div x-show="open" x-transition 
+          class="mt-3 space-y-2 text-sm text-gray-700">
+        {% if liked_posts %}
           {% for post in liked_posts %}
-            <li><a href="{{ post.get_absolute_url }}" class="text-purple-600 hover:underline">{{ post.title }}</a></li>
+            <div class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <a href="{{ post.get_absolute_url }}" class="font-medium text-blue-600 hover:underline">
+                {{ post.title }}
+              </a>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ post.created_at|date:"M d, Y" }}
+              </p>
+            </div>
           {% endfor %}
-        </ul>
-      {% else %}
-        <p class="text-gray-500">You haven't liked any posts yet.</p>
-      {% endif %}
+        {% else %}
+          <p class="text-sm text-gray-500 italic">No liked posts yet.</p>
+        {% endif %}
+      </div>
     </div>
+
 
     <!-- Bookmarked Posts -->
-    <div>
-      <h2 class="text-xl font-semibold text-purple-800 mb-2">🔖 Bookmarked Posts</h2>
-      {% if bookmarked_posts %}
-        <ul class="list-disc pl-5 text-gray-700">
+    <div x-data="{ open: false }" class="bg-white rounded-2xl shadow p-4 mb-4">
+      <div 
+        @click="open = !open" 
+        class="flex items-center justify-between cursor-pointer">
+        <h2 class="text-lg font-semibold">🔖 Bookmarked Posts</h2>
+        <svg :class="{'rotate-180': open}" 
+            class="w-5 h-5 transform transition-transform duration-300" 
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      <div x-show="open" x-transition 
+          class="mt-3 space-y-2 text-sm text-gray-700">
+        {% if bookmarked_posts %}
           {% for post in bookmarked_posts %}
-            <li><a href="{{ post.get_absolute_url }}" class="text-purple-600 hover:underline">{{ post.title }}</a></li>
+            <div class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <a href="{{ post.get_absolute_url }}" class="font-medium text-blue-600 hover:underline">
+                {{ post.title }}
+              </a>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ post.created_at|date:"M d, Y" }}
+              </p>
+            </div>
           {% endfor %}
-        </ul>
-      {% else %}
-        <p class="text-gray-500">No bookmarks yet.</p>
-      {% endif %}
+        {% else %}
+          <p class="text-sm text-gray-500 italic">No bookmarked posts yet.</p>
+        {% endif %}
+      </div>
     </div>
+
+    <!-- Settings Links -->
+    <div class="mt-6 flex justify-between items-center border-t pt-4">
+      <a href="{% url 'accounts:password_reset' %}" class="text-indigo-500 hover:underline text-sm">
+        🔑 Change Password
+      </a>
+      <form id="delete-account-form" action="{% url 'accounts:delete_account' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="text-red-500 hover:underline text-sm" onclick="return confirm('Are you sure you want to delete your account? This action is irreversible.')">
+          🗑️ Delete Account
+        </button>
+      </form>
+    </div>
+
   </div>
 </div>
-
 {% endblock %}
+
+
+

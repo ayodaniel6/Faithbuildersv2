@@ -1,42 +1,64 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
+from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
-class AccountsTestCase(TestCase):
+User = get_user_model()
+
+class AccountsAppTests(TestCase):
     def setUp(self):
+        self.client = Client()
         self.user = User.objects.create_user(
-            username='testuser', 
+            username='testuser',
             email='test@example.com',
-            password='TestPass123!',
-            first_name='Test'
+            password='pass1234'
         )
 
-    def test_user_registration(self):
+    def test_dashboard_access_requires_login(self):
+        """Should redirect to login if unauthenticated user accesses dashboard."""
+        response = self.client.get(reverse('accounts:dashboard'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('accounts:login'), response.url)
+
+    def test_login_logout(self):
+        """Test successful login and logout flow."""
+        login = self.client.login(username='testuser', password='pass1234')
+        self.assertTrue(login)
+
+        dashboard_response = self.client.get(reverse('accounts:dashboard'))
+        self.assertEqual(dashboard_response.status_code, 200)
+
+        self.client.logout()
+        post_logout_response = self.client.get(reverse('accounts:dashboard'))
+        self.assertEqual(post_logout_response.status_code, 302)
+
+    def test_signup(self):
+        """Test user sign-up creates a new account successfully."""
         response = self.client.post(reverse('accounts:signup'), {
             'username': 'newuser',
-            'email': 'new@example.com',
-            'password1': 'Newpass123!',
-            'password2': 'Newpass123!',
-            'first_name': 'New'
-        })
-        self.assertEqual(response.status_code, 302)  # should redirect after sign up
+            'email': 'newuser@example.com',
+            'password1': 'securepass123',
+            'password2': 'securepass123'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(User.objects.filter(username='newuser').exists())
 
-    def test_user_login(self):
-        response = self.client.post(reverse('accounts:login'), {
-            'username': 'testuser',
-            'password': 'TestPass123!'
-        })
-        self.assertEqual(response.status_code, 302)  # should redirect after login
-        self.assertTrue('_auth_user_id' in self.client.session)
-
-    def test_profile_dashboard_access(self):
-        self.client.login(username='testuser', password='TestPass123!')
-        response = self.client.get(reverse('accounts:dashboard'))
+    def test_edit_profile(self):
+        """Test updating user profile works as expected."""
+        self.client.login(username='testuser', password='pass1234')
+        response = self.client.post(reverse('accounts:update_profile'), {
+            'first_name': 'Updated',
+            'last_name': 'Name',
+            'bio': 'Updated bio',
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Test')  # checks if first_name is shown
 
-    def test_logout(self):
-        self.client.login(username='testuser', password='TestPass123!')
-        response = self.client.get(reverse('accounts:logout'))
-        self.assertEqual(response.status_code, 302)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, 'Updated')
+        self.assertEqual(self.user.last_name, 'Name')
+
+    def test_change_password_email_flow(self):
+        """Test that password reset email view renders successfully."""
+        response = self.client.post(reverse('accounts:password_reset'), {
+            'email': self.user.email
+        })
+        self.assertEqual(response.status_code, 302)  # Django redirects on success

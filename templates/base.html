@@ -1,147 +1,124 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}FaithBuilders{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FaithBuilders{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom CSS and JS -->
+  <script src="{% static 'js/base.js' %}" defer></script>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+  <link rel="icon" href="{% static 'images/favicon.ico' %}" />
+  <script src="{% static 'blog/js/search.js' %}" defer></script>
+  <script src="{% static 'bot/js/bot.js' %}" defer></script>
+  <script src="{% static 'js/base.js' %}" defer></script>
+</head>
 
-    <!-- Custom CSS and JS -->
-    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
-    <link rel="icon" href="{% static 'images/favicon.ico' %}" />
-    <script src="{% static 'blog/js/search.js' %}" defer></script>
-    <script src="{% static 'bot/js/bot.js' %}" defer></script>
-    <script src="{% static 'js/base.js' %}" defer></script>
-  </head>
-  <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
-    
-    <!-- Navbar -->
-    <nav class="bg-purple-600 text-white shadow-md">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <a href="{% url 'blog:post_list' %}" class="text-xl font-semibold tracking-tight">Faithbuilders</a>
-        
-        <form id="search-form" class="relative w-full max-w-md mx-auto">
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center py-4 px-6 shadow-sm bg-white dark:bg-gray-800">
+      <a href="/" class="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
+        FaithBuilders
+      </a>
+
+    <div class="flex items-center gap-4">
+      {% if user.is_authenticated %}
+
+        <!-- Show search only when logged in -->
+        <form id="search-form" class="relative hidden sm:block">
           <input 
             type="text" 
             id="search-input" 
             placeholder="Search posts..." 
-            class="w-full px-5 py-3 border border-gray-300 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            class="px-3 py-2 w-56 border rounded-md text-sm bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           />
-          <ul 
-            id="search-results" 
-            class="absolute w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg z-10 text-gray-900 dark:text-gray-100"
-          ></ul>
+          <ul id="search-results" class="absolute w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg z-10 text-sm"></ul>
         </form>
-        
-        <!-- Desktop Navbar Items -->
-        <div class="space-x-4 hidden md:flex items-center">
-          <a href="{% url 'blog:post_list' %}" class="hover:underline">Blog</a>
 
-          {% if user.is_authenticated %}
-            <a href="{% url 'accounts:dashboard' %}" class="hover:underline">Profile</a>
-            <a href="{% url 'accounts:logout' %}" class="hover:underline">Logout</a>
-          {% else %}
-            <a href="{% url 'accounts:auth' %}" class="hover:underline">Login</a>
-            <a href="{% url 'accounts:auth' %}" class="hover:underline">Sign Up</a>
-          {% endif %}
-          <button onclick="toggleDarkMode()" class="ml-4 px-3 py-1 rounded-md text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            Toggle Dark Mode
-          </button>
-        </div>
+        <a href="{% url 'accounts:dashboard' %}" class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Dashboard</a>
+        <form action="{% url 'accounts:logout' %}" method="post">
+          {% csrf_token %}
+          <button class="text-sm font-medium text-red-500 hover:text-red-700 transition">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="text-sm font-medium text-indigo-500 hover:text-indigo-700 transition">Login</a>
+        <a href="{% url 'accounts:logout' %}" class="text-sm font-medium text-indigo-500 hover:text-indigo-700 transition">Sign Up</a>
+      {% endif %}
 
-        <!-- Mobile Menu Button -->
-        <button class="md:hidden text-white" id="mobile-menu-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
-      </div>
+      <!-- Dark mode toggle -->
+      <button onclick="toggleDarkMode()" class="px-3 py-1 rounded-md text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        🌓
+      </button>
+    </div>
+  </nav>
 
-      <!-- Mobile Menu -->
-      <div id="mobile-menu" class="hidden md:hidden bg-purple-700 px-4 py-2 space-y-2">
-        <a href="{% url 'blog:post_list' %}" class="block">Blog</a>
-        {% if user.is_authenticated %}
-          <a href="{% url 'accounts:dashboard' %}" class="block">Profile</a>
-          <a href="{% url 'accounts:logout' %}" class="block">Logout</a>
-        {% else %}
-          <a href="{% url 'accounts:auth' %}" class="block">Login</a>
-          <a href="{% url 'accounts:auth' %}" class="block">Sign Up</a>
-        {% endif %}
-      </div>
-    </nav>
-
-    <!-- Flash Messages -->
-    {% if messages %}
-    <div class="max-w-3xl mx-auto my-4 px-4">
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="max-w-xl mx-auto mt-4 px-4 fade-in">
       {% for message in messages %}
-        <div class="p-4 mb-2 rounded shadow 
-          {% if message.tags == 'success' %}bg-green-100 text-green-800
-          {% elif message.tags == 'error' %}bg-red-100 text-red-800
-          {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800
-          {% else %}bg-blue-100 text-blue-800{% endif %}">
+        <div class="p-4 mb-3 rounded text-sm text-white 
+          {% if message.tags == 'success' %}bg-green-500 
+          {% elif message.tags == 'error' %}bg-red-500 
+          {% elif message.tags == 'warning' %}bg-yellow-500 
+          {% else %}bg-gray-700{% endif %}">
           {{ message }}
         </div>
       {% endfor %}
     </div>
-    {% endif %}
+  {% endif %}
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-8">
-      {% block content %}{% endblock %}
-    </main>
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-6 py-12 fade-in">
+    {% block content %}
+    {% endblock %}
+  </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-4 mt-10">
-      <div class="container mx-auto flex justify-between items-center">
-          <p>&copy; {{ 2025|default:"2025" }} Daniel Ayodeji. All rights reserved.</p>
-
-          <!-- Conditionally show CMS and API links for authorized users -->
-          {% if user.is_authenticated %}
-              <div>
-                  {% if user.is_staff %}
-                      <a href="{% url 'cms:admin_dashboard' %}" class="text-white hover:underline">CMS Dashboard</a>
-                      <a href="{% url 'cms:restfulAPI' %}" class="text-white hover:underline ml-4">API</a>
-                  {% endif %}
-              </div>
-          {% endif %}
-      </div>
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-400 py-6">
+    &copy; {{ now|date:"Y" }} FaithBuilders. All rights reserved. 
+      <a href="{% url 'cms:admin_dashboard' %}" 
+    class="text-gray-400 hover:text-gray-600 text-sm transition duration-300">
+    CMS
+    </a>
+    .
+          <a href="{% url 'cms:restfulAPI' %}" 
+    class="text-gray-400 hover:text-gray-600 text-sm transition duration-300">
+    API
+    </a>
   </footer>
 
-    <!-- Floating Chatbot Button -->
-    <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-full shadow-xl cursor-pointer transition duration-300">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m-2 8a9 9 0 110-18 9 9 0 010 18z" />
-      </svg>
+  <!-- Bot button -->
+  <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-xl cursor-pointer transition duration-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m-2 8a9 9 0 110-18 9 9 0 010 18z" />
+    </svg>
+  </div>
+
+  <!-- Chatbot Panel -->
+  <div id="chatbot-box" data-request-url="{% url 'bot:request' %}" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 transition-all duration-300 overflow-hidden">
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-800 dark:text-gray-100">
+      Ask the Bot
     </div>
-
-    <!-- Chatbot Panel -->
-    <div id="chatbot-box" data-request-url="{% url 'bot:request' %}" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 transition-all duration-300 overflow-hidden">
-      <div class="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-800 dark:text-gray-100">
-        Ask the Bot
-      </div>
-
-      <!-- Chat Area -->
-      <div id="chat-area" class="p-4 space-y-2 max-h-64 overflow-y-auto text-sm text-gray-800 dark:text-gray-200">
-        <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">Hi! How can I help you?</div>
-        <button onclick="askBot('request a counsellor')" class="w-full text-left bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-900 dark:hover:bg-purple-800 dark:text-purple-300 rounded-lg px-3 py-2 transition">
-          Request a counsellor?
-        </button>
-        <button onclick="askBot('what is this site about')" class="w-full text-left bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-900 dark:hover:bg-purple-800 dark:text-purple-300 rounded-lg px-3 py-2 transition">
-          What is this site about?
-        </button>
-      </div>
-
-      <!-- Input Area -->
-      <div class="p-2 border-t border-gray-200 dark:border-gray-700 flex bg-gray-50 dark:bg-gray-900">
-        {% csrf_token %}
-        <input type="text" id="bot-input" placeholder="Type your question..." class="flex-1 text-sm px-3 py-2 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:bg-gray-800 dark:text-white" />
-        <button onclick="sendBotMessage()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-r-lg text-sm transition">
-          Send
-        </button>
-      </div>
+    <div id="chat-area" class="p-4 space-y-2 max-h-64 overflow-y-auto text-sm text-gray-800 dark:text-gray-200">
+      <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">Hi! How can I help you?</div>
+      <button onclick="askBot('request a counsellor')" class="w-full text-left bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:hover:bg-indigo-800 dark:text-indigo-300 rounded-lg px-3 py-2 transition">
+        Request a counsellor?
+      </button>
+      <button onclick="askBot('what is this site about')" class="w-full text-left bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:hover:bg-indigo-800 dark:text-indigo-300 rounded-lg px-3 py-2 transition">
+        What is this site about?
+      </button>
     </div>
+    <div class="p-2 border-t border-gray-200 dark:border-gray-700 flex bg-gray-50 dark:bg-gray-900">
+      {% csrf_token %}
+      <input type="text" id="bot-input" placeholder="Type your question..." class="flex-1 text-sm px-3 py-2 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white" />
+      <button onclick="sendBotMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg text-sm transition">
+        Send
+      </button>
+    </div>
+  </div>
 
-    {% block extra_js %}{% endblock %}
-  </body>
+</body>
 </html>

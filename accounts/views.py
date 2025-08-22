@@ -1,89 +1,141 @@
-from django.views import View
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
-from .forms import SignUpForm, LoginForm, UserUpdateForm, ProfileUpdateForm, CustomPasswordChangeForm
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-from django.contrib.auth.views import PasswordChangeView
-from django.urls import reverse_lazy
-from blog.models import Post
 from django.contrib import messages
+from django.urls import reverse_lazy
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.contrib.auth.views import (
+    LoginView as DjangoLoginView,
+    PasswordResetView as DjangoPasswordResetView,
+    PasswordResetDoneView as DjangoPasswordResetDoneView,
+    PasswordResetConfirmView as DjangoPasswordResetConfirmView,
+    PasswordResetCompleteView as DjangoPasswordResetCompleteView,
+    LogoutView as DjangoLogoutView,
+)
+from .forms import (
+    CustomUserCreationForm,
+    LoginForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
+from .utils import calculate_profile_completeness
+from blog.models import Post
 
 
-class AuthView(View):
-    def get(self, request):
-        return render(request, 'accounts/auth.html', {
-            'signup_form': SignUpForm(),
-            'login_form': LoginForm()
-        })
-
-    def post(self, request):
-        if 'signup' in request.POST:
-            signup_form = SignUpForm(request.POST)
-            if signup_form.is_valid():
-                user = signup_form.save(commit=False)
-                user.set_password(signup_form.cleaned_data['password'])
-                user.save()
-                login(request, user)
-                return redirect('/')
-        elif 'login' in request.POST:
-            login_form = LoginForm(data=request.POST)
-            if login_form.is_valid():
-                user = login_form.get_user()
-                login(request, user)
-                return redirect('/')
-        return render(request, 'accounts/auth.html', {
-            'signup_form': SignUpForm(request.POST),
-            'login_form': LoginForm(request.POST)
-        })
-    
-    def form_valid(self, request):
-        messages.success(self.request, "Login Successful.")
-        return super().form_valid(request)
+def signup_view(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Account created successfully! You can now log in.')
+            return redirect('accounts:login')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'accounts/signup.html', {'form': form})
 
 
-class LogoutView(View):
-    def get(self, request):
-        logout(request)
-        return redirect('accounts:auth')
+class LoginView(DjangoLoginView):
+    authentication_form = LoginForm
+    template_name = 'accounts/login.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if not form.cleaned_data.get('remember_me'):
+            self.request.session.set_expiry(0)
+        else:
+            self.request.session.set_expiry(1209600)
+        return response
 
 
+class LogoutView(DjangoLogoutView):
+    http_method_names = ['get', 'post']
 
-class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'accounts/dashboard.html'
+
+class PasswordResetView(DjangoPasswordResetView):
+    template_name = 'accounts/password_reset.html'
+    form_class = PasswordResetForm
+    success_url = reverse_lazy('accounts:password_reset_done')
+
+
+class PasswordResetDoneView(DjangoPasswordResetDoneView):
+    template_name = 'accounts/password_reset.html'
+    extra_context = {'stage': 'done'}
+
+
+class PasswordResetConfirmView(DjangoPasswordResetConfirmView):
+    template_name = 'accounts/password_reset.html'
+    form_class = SetPasswordForm
+    success_url = reverse_lazy('accounts:password_reset_complete')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
-
-        context['liked_posts'] = Post.objects.filter(likes=user).order_by('-date_published')
-        context['bookmarked_posts'] = Post.objects.filter(bookmarks=user).order_by('-date_published')
-        context['u_form'] = UserUpdateForm(instance=user)
-        context['p_form'] = ProfileUpdateForm(instance=user.profile)
-
+        context['stage'] = 'confirm'
         return context
 
-    def post(self, request, *args, **kwargs):
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-            return redirect('accounts:dashboard')
-
-        context = self.get_context_data()
-        context['u_form'] = u_form
-        context['p_form'] = p_form
-        return self.render_to_response(context)
-
-
-
-class ChangePasswordView(PasswordChangeView):
-    form_class = CustomPasswordChangeForm
-    template_name = 'accounts/change_password.html'
+class PasswordResetCompleteView(DjangoPasswordResetCompleteView):
+    template_name = 'accounts/password_reset.html'
+    extra_context = {'stage': 'complete'}
     success_url = reverse_lazy('accounts:dashboard')
 
-    def form_valid(self, form):
-        messages.success(self.request, "Your password was successfully changed.")
-        return super().form_valid(form)
+
+@login_required
+def dashboard_view(request):
+    user = request.user
+    meter = calculate_profile_completeness(user)
+    tips = []
+    if not user.first_name:
+        tips.append("Add your first name")
+    if not user.last_name:
+        tips.append("Add your last name")
+    if not user.email:
+        tips.append("Verify your email address")
+    if not user.bio:
+        tips.append("Write a short bio about yourself")
+    if not user.avatar:
+        tips.append("Upload a profile picture")
+
+    liked_posts = Post.objects.filter(likes=user) 
+
+    bookmarked_posts = Post.objects.filter(bookmarks=user) if hasattr(Post, "bookmarks") else None
+
+    context = {
+        'user': user,
+        'meter': meter,
+        'tips': tips,
+        'liked_posts': liked_posts,
+        'bookmarked_posts': bookmarked_posts,
+    }
+    return render(request, 'accounts/dashboard.html', context)
+
+
+@login_required
+@require_POST
+def update_profile_view(request):
+    user = request.user
+    user.first_name = request.POST.get('first_name', '').strip()
+    user.last_name = request.POST.get('last_name', '').strip()
+    user.bio = request.POST.get('bio', '').strip()
+    avatar = request.FILES.get('avatar')
+    if avatar:
+        user.avatar = avatar
+    user.save()
+    return JsonResponse({
+        "status": "success",
+        "first_name": user.first_name,
+        "username": user.username,
+        "avatar_url": user.avatar.url if user.avatar else "",
+    })
+
+
+@login_required
+@require_POST
+def delete_account_view(request):
+    user = request.user
+    logout(request)
+    user.delete()
+    messages.success(request, "Your account has been deleted successfully.")
+    return redirect('accounts:login')

@@ -1,112 +1,105 @@
 from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
-from .models import Profile
+from django.contrib.auth.forms import (UserCreationForm, AuthenticationForm, 
+                                       PasswordResetForm, SetPasswordForm)
+from .models import CustomUser
 
-class SignUpForm(forms.ModelForm):
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': 'w-full px-4 py-2 border rounded-lg',
-            'placeholder': 'Enter password'
-        })
-    )
-    first_name = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-2 border rounded-lg',
-            'placeholder': 'First name (optional)'
-        })
-    )
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-2 border rounded-lg',
-            'placeholder': 'Enter username'
-        })
-    )
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            'class': 'w-full px-4 py-2 border rounded-lg',
-            'placeholder': 'Enter email'
-        })
-    )
+# Reusable Tailwind style
+INPUT_CLASSES = "w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all"
 
+class CustomUserCreationForm(UserCreationForm):
     class Meta:
-        model = User
-        fields = ['username', 'first_name', 'email', 'password']
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'email', 'password1', 'password2')
+
+    def __init__(self, *args, **kwargs):
+        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
+        
+        self.fields['first_name'].widget.attrs.update({
+            'class': INPUT_CLASSES,
+            'placeholder': 'Your First Name'
+        })
+        self.fields['last_name'].widget.attrs.update({
+            'class': INPUT_CLASSES,
+            'placeholder': 'Your Last Name'
+        })
+        self.fields['email'].widget.attrs.update({
+            'class': INPUT_CLASSES,
+            'placeholder': 'you@example.com'
+        })
+        self.fields['password1'].widget.attrs.update({
+            'class': INPUT_CLASSES,
+            'placeholder': 'Create a strong password'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': INPUT_CLASSES,
+            'placeholder': 'Confirm your password'
+        })
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered.")
+        return email
+
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-2 border rounded-lg',
-            'placeholder': 'Username'
-        }))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={
-            'class': 'w-full px-4 py-2 border rounded-lg',
-            'placeholder': 'Password'
-        }))
+    input_class = "w-full px-4 py-2 mt-2 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+
+    remember_me = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={"class": "mr-2"})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'placeholder': 'Email',
+            'class': self.input_class
+        })
+        self.fields['password'].widget.attrs.update({
+            'placeholder': 'Password',
+            'class': self.input_class
+        })
 
 
-class UserUpdateForm(forms.ModelForm):
-    first_name = forms.CharField(required=False, label='First Name')
-    username = forms.CharField(label='Username', disabled=True)
-    email = forms.EmailField(label='Email', disabled=True)
+class PasswordResetForm(PasswordResetForm):
+    input_class = "w-full px-4 py-2 mt-2 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({
+            'placeholder': 'Enter your account email',
+            'class': self.input_class
+        })
+
+
+class SetPasswordForm(SetPasswordForm):
+    input_class = "w-full px-4 py-2 mt-2 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['new_password1'].widget.attrs.update({
+            'placeholder': 'New password',
+            'class': self.input_class
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'placeholder': 'Confirm new password',
+            'class': self.input_class
+        })
+
+
+
+class ProfileEditForm(forms.ModelForm):
     class Meta:
-        model = User
-        fields = ['first_name', 'username']
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'avatar')
         widgets = {
-            'first_name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500',
-                'placeholder': 'First Name'
-            }),
-            'username': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed text-gray-500',
-                'placeholder': 'Username',
-                'readonly': True  # Extra protection to ensure it’s uneditable
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed text-gray-500',
-                'readonly': True  # Extra protection to ensure it’s uneditable
-            }),
+            'first_name': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+            'last_name': forms.TextInput(attrs={'class': INPUT_CLASSES}),
         }
 
-class ProfileUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ['bio', 'avatar']
-        widgets = {
-            'bio': forms.Textarea(attrs={
-                'rows': 4,
-                'class': 'w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500',
-                'placeholder': 'Write a short bio...'
-            }),
-            'avatar': forms.FileInput(attrs={
-                'class': 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100',
-                'accept': 'images/*',
-                'onchange': 'previewAvatar(event)'
-            }),
-        }
-
-
-class CustomPasswordChangeForm(PasswordChangeForm):
-    old_password = forms.CharField(
-        label="Current Password",
-        widget=forms.PasswordInput(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none',
-            'placeholder': 'Enter current password'
-        })
-    )
-    new_password1 = forms.CharField(
-        label="New Password",
-        widget=forms.PasswordInput(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none',
-            'placeholder': 'Enter new password'
-        })
-    )
-    new_password2 = forms.CharField(
-        label="Confirm New Password",
-        widget=forms.PasswordInput(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none',
-            'placeholder': 'Confirm new password'
-        })
-    )
+    avatar = forms.ImageField(required=False, widget=forms.ClearableFileInput(attrs={
+        'class': 'mt-2 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100'
+    }))

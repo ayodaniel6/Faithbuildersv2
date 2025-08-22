@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'cms',
     'bot',
     'rest_framework',
+    'rest_framework.authtoken',
     'ckeditor',
     "django_cleanup.apps.CleanupConfig",
     'taggit',
@@ -148,6 +149,22 @@ MEDIA_ROOT = Path(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Custom user model
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Login redirect
+LOGIN_REDIRECT_URL = 'blog:post_list'
+LOGOUT_REDIRECT_URL = "accounts:login"
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
 # Rest API
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
@@ -161,28 +178,11 @@ REST_FRAMEWORK = {
 }
 
 
-TINYMCE_DEFAULT_CONFIG = {
-    'height': 360,
-    'menubar': True,
-    'plugins': 'advlist autolink lists link image charmap print preview anchor searchreplace code fullscreen insertdatetime media table paste help wordcount',
-    'toolbar': 'undo redo | formatselect | bold italic backcolor | \
-        alignleft aligncenter alignright alignjustify | \
-        bullist numlist outdent indent | removeformat | help',
-}
-
-# for sending of emails
-DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Use SMTP in production
-
-# Using Gmail SMTP
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Or another provider's SMTP server
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'danielakindoyin2@gmail.com'
-EMAIL_HOST_PASSWORD = 'mcqr aclu cxdm cvxg'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-INTERNAL_IPS = [
-    '127.0.0.1',  # Local IP for development
-]
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')

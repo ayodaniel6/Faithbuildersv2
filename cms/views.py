@@ -14,12 +14,16 @@ def cms_dashboard(request):
 @staff_member_required
 def post_list(request):
     user = request.user
-    published_posts = Post.objects.filter(author=user, is_draft=False).order_by('-date_published')
+    # Show all published posts
+    published_posts = Post.objects.filter(is_draft=False).order_by('-date_published')
+    # Show drafts only created by this user
     draft_posts = Post.objects.filter(author=user, is_draft=True).order_by('-date_published')
+    
     return render(request, 'cms/admin_post_list.html', {
         'published_posts': published_posts,
         'draft_posts': draft_posts,
     })
+
 
 
 @staff_member_required

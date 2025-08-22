@@ -11,45 +11,99 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .forms import CounsellorRequestForm
 from blog.models import Post
+from django.core.mail import EmailMessage
+
+from .forms import CounsellorRequestForm
 
 
-# 🔹 Counsellor Request View (Login Required)
-@login_required(login_url='/accounts/auth/')
+@login_required(login_url='/accounts/login/')
 def request_counsellor(request):
     if request.method == 'POST':
         form = CounsellorRequestForm(request.POST)
         if form.is_valid():
-            form.save()
+            counsellor_request = form.save(commit=False)
+            counsellor_request.user = request.user
+            counsellor_request.save()
 
-            # Send email to the user
-            send_mail(
-                'Counsellor Request Submitted',
-                f'Thank you {request.user.username}, your request for a counsellor has been received.',
-                settings.DEFAULT_FROM_EMAIL,
-                [request.user.email],  # Send to the user's email
-                fail_silently=False,
+            # --- Email to user (confirmation) ---
+            user_subject = "Counsellor Request Submitted"
+            user_body = render(
+                request,
+                "bot/thank_you.html",
+                {"user": request.user}
+            ).content.decode("utf-8")
+
+            user_email = EmailMessage(
+                subject=user_subject,
+                body=user_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[request.user.email],
             )
+            user_email.content_subtype = "html"  # ✅ ensures email is sent as HTML
+            user_email.send(fail_silently=False)
+
+            # --- Email to admins (notification) ---
+            admin_subject = "New Counsellor Request"
+            admin_body = render(
+                request,
+                "bot/request.html",
+                {"user": request.user, "request": counsellor_request}
+            ).content.decode("utf-8")
+
+            admin_email = EmailMessage(
+                subject=admin_subject,
+                body=admin_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[admin[1] for admin in settings.ADMINS],
+            )
+            admin_email.content_subtype = "html"
+            admin_email.send(fail_silently=False)
+
             messages.success(request, "Your request has been submitted. A confirmation email has been sent.")
-
-            # email = EmailMessage(
-            #     'Counsellor Request Received',
-            #     '<h2>Thank you for your request</h2><p>Your request is being processed.</p>',
-            #     settings.DEFAULT_FROM_EMAIL,
-            #     [user_email],
-            # )
-            # email.content_subtype = 'html'  # To send HTML email
-            # email.send()
-
-            return redirect('bot:thank_you')
-
+            return redirect("bot:thank_you")
     else:
-        initial_data = {
-            'email': request.user.email,
-            'name': request.user.get_full_name() or request.user.username
-        }
-        form = CounsellorRequestForm(initial=initial_data)
+        form = CounsellorRequestForm()
 
-    return render(request, 'bot/request.html', {'form': form})
+    return render(request, "bot/request.html", {"form": form})
+
+
+# # 🔹 Counsellor Request View (Login Required)
+# @login_required(login_url='/accounts/login/')
+# def request_counsellor(request):
+#     if request.method == 'POST':
+#         form = CounsellorRequestForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+
+#             # Send email to the user
+#             send_mail(
+#                 'Counsellor Request Submitted',
+#                 f'Thank you {request.user.username}, your request for a counsellor has been received.',
+#                 settings.DEFAULT_FROM_EMAIL,
+#                 [request.user.email],  # Send to the user's email
+#                 fail_silently=False,
+#             )
+#             messages.success(request, "Your request has been submitted. A confirmation email has been sent.")
+
+#             # email = EmailMessage(
+#             #     'Counsellor Request Received',
+#             #     '<h2>Thank you for your request</h2><p>Your request is being processed.</p>',
+#             #     settings.DEFAULT_FROM_EMAIL,
+#             #     [user_email],
+#             # )
+#             # email.content_subtype = 'html'  # To send HTML email
+#             # email.send()
+
+#             return redirect('bot:thank_you')
+
+#     else:
+#         initial_data = {
+#             'email': request.user.email,
+#             'name': request.user.get_full_name() or request.user.username
+#         }
+#         form = CounsellorRequestForm(initial=initial_data)
+
+#     return render(request, 'bot/request.html', {'form': form})
 
 
 @csrf_exempt
