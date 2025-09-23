@@ -78,6 +78,7 @@ def manage_requests(request):
     return render(request, 'cms/manage_requests.html', {'requests': requests})
 
 
-class restfulAPIView(TemplateView):
-    template_name = 'restAPI.html'
+@staff_member_required
+def restfulAPIView(request):
+    return render(request, 'restAPI.html')
     

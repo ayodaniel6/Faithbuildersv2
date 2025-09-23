@@ -12,5 +12,5 @@ urlpatterns = [
     path('comments/', views.comment_list, name='admin_comment_list'),
     path('comments/<int:comment_id>/delete/', views.comment_delete, name='admin_comment_delete'),
     path('requests/', views.manage_requests, name='manage_requests'),
-    path('api/', views.restfulAPIView.as_view(), name='restfulAPI'),
+    path('api/', views.restfulAPIView, name='restfulAPI'),
 ]
