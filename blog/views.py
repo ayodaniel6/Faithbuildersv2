@@ -14,7 +14,7 @@ from datetime import timedelta
 @cache_page(60 * 15)
 def post_list(request):
     post_list = Post.objects.filter(is_draft=False).order_by('-date_published')
-    paginator = Paginator(post_list, 10)  # Show 10 posts per page
+    paginator = Paginator(post_list, 12)  # Show 12 posts per page
     page = request.GET.get('page')
     posts = paginator.get_page(page)
 
