@@ -1,16 +1,18 @@
-from .settings import *  
+from .settings import *
 import os
+from decouple import config, Csv
+import dj_database_url 
 
-# Database (Postgres)
+# Database (support DATABASE_URL or individual vars)
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
-    }
+    "default": dj_database_url.config(
+        default=config(
+            "DATABASE_URL",
+            default=f"postgres://{config('DB_USER', default='')}:{config('DB_PASSWORD', default='')}@{config('DB_HOST', default='localhost')}:{config('DB_PORT', default='5432')}/{config('DB_NAME', default='')}"
+        ),
+        conn_max_age=600,
+        ssl_require=True,
+    )
 }
 
 # Static & Media
